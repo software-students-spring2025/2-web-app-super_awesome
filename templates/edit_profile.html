@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - {{ user.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        .profile-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 50%;
+            margin: auto;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-container">
+            <h1>Edit Profile</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <label for="name">New Name:</label>
+                <input type="text" id="name" name="name" value="{{ user.name }}" required>
+
+                <label for="password">New Password:</label>
+                <input type="password" id="password" name="password">
+
+                <label for="confirm_password">Confirm New Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password">
+
+                <button type="submit">Save Changes</button>
+            </form>
+
+            <p><a href="{{ url_for('profile') }}">← Back to Profile</a></p>
+        </div>
+    </div>
+</body>
+</html>

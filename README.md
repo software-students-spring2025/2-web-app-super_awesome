@@ -4,7 +4,7 @@ A little exercise to build a web application following an agile development proc
 
 ## Product vision statement
 
-Site for students to share course materials and help those taking the same class later
+Site for students to share course materials and help those taking the same class later.
 
 ## User stories
 
