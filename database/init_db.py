@@ -1,6 +1,6 @@
-from models import create_course
+from .models import create_course
 import pymongo
-from db import courses, users, materials
+from .db import courses, users, materials, discussions
 
 # Create indexes for efficient searching
 def create_indexes():
@@ -9,49 +9,59 @@ def create_indexes():
     users.create_index("email", unique=True)
     
     # Course indexes
-    courses.create_index("course_code", unique=True)
-    courses.create_index([("title", pymongo.TEXT), 
+    courses.create_index("code", unique=True)
+    courses.create_index([("name", pymongo.TEXT), 
                          ("description", pymongo.TEXT), 
                          ("department", pymongo.TEXT)])
     
     # Material indexes
-    materials.create_index([("title", pymongo.TEXT), 
+    materials.create_index([("name", pymongo.TEXT), 
                            ("description", pymongo.TEXT)])
     materials.create_index("course_id")
     materials.create_index("uploader_id")
     materials.create_index("material_type")
     materials.create_index("upload_date")
+    
+    # Discussion indexes
+    discussions.create_index("course_id")
+    discussions.create_index("user_id")
+    discussions.create_index("date")
+    discussions.create_index([("content", pymongo.TEXT)])
 
 # Sample data for testing
 def add_sample_data():
     # Sample courses
     courses_data = [
         {
-            "course_code": "CS101",
-            "title": "Introduction to Computer Science",
+            "code": "CS101",
+            "name": "Introduction to Computer Science",
             "department": "Computer Science",
-            "description": "Fundamental concepts of computer science and programming."
+            "description": "Fundamental concepts of computer science and programming.",
+            "instructor": "Dr. Smith"
         },
         {
-            "course_code": "MATH201",
-            "title": "Calculus II",
+            "code": "MATH201",
+            "name": "Calculus II",
             "department": "Mathematics",
-            "description": "Advanced calculus topics including integration techniques and applications."
+            "description": "Advanced calculus topics including integration techniques and applications.",
+            "instructor": "Dr. Johnson"
         },
         {
-            "course_code": "PHYS150",
-            "title": "Physics for Scientists and Engineers",
+            "code": "PHYS150",
+            "name": "Physics for Scientists and Engineers",
             "department": "Physics",
-            "description": "Introductory physics for STEM majors covering mechanics and thermodynamics."
+            "description": "Introductory physics for STEM majors covering mechanics and thermodynamics.",
+            "instructor": "Prof. Williams"
         }
     ]
     
     for course in courses_data:
         create_course(
-            course["course_code"],
-            course["title"],
+            course["code"],
+            course["name"],
             course["department"],
-            course["description"]
+            course["description"],
+            course["instructor"]
         )
     
     print("Sample data added successfully!")

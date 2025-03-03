@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - {{ user.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        .profile-header {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-header h1 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .history-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background: var(--secondary-color);
+        }
+
+        .history-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            margin-right: 15px;
+        }
+
+        .empty-message {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="{{ url_for('courses') }}">← Back to Courses</a>
+            <a href="{{ url_for('logout') }}" style="float: right;">Logout</a>
+        </div>
+
+        <div class="profile-header">
+            <h1>{{ user.name }}'s Profile</h1>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+
+        <div class="history-section">
+            <h2>Upload History</h2>
+            {% if materials %}
+                {% for material in materials %}
+                <div class="history-item">
+                    <div class="history-meta">
+                        Uploaded on {{ material.description.split("Uploaded on ")[1] }}
+                    </div>
+                    <h3>{{ material.name }}</h3>
+                    <a href="{{ url_for('download_material', material_id=material._id) }}" class="button">Download</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-message">No uploads yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="history-section">
+            <h2>Discussion History</h2>
+            {% if discussions %}
+                {% for discussion in discussions %}
+                <div class="history-item">
+                    <div class="history-meta">
+                        Posted on {{ discussion.date }}
+                    </div>
+                    <p>{{ discussion.content }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-message">No discussions yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html> 

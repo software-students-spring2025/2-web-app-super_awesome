@@ -1,6 +1,6 @@
 import datetime
 from bson.objectid import ObjectId
-from db import users, courses, materials
+from .db import users, courses, materials, discussions
 from werkzeug.security import generate_password_hash
 
 # User-related database operations
@@ -8,11 +8,13 @@ def create_user(username, email, password):
     """Create a new user in the database."""
     user = {
         "username": username,
+        "name": username,  # Add name field to match app.py
         "email": email,
         "password": generate_password_hash(password),
         "date_joined": datetime.datetime.utcnow(),
         "uploads": [],
-        "bookmarks": []
+        "bookmarks": [],
+        "discussions": []  # Add discussions field
     }
     result = users.insert_one(user)
     return result.inserted_id
@@ -55,13 +57,25 @@ def remove_bookmark(user_id, material_id):
     )
 
 # Course-related database operations
-def create_course(course_code, title, department, description):
-    """Create a new course in the database."""
+def create_course(course_code, title, department=None, description=None, instructor=None):
+    """Create a new course in the database.
+    
+    Args:
+        course_code (str): The course code (e.g., CS101)
+        title (str): The course name/title
+        department (str, optional): The department offering the course
+        description (str, optional): Course description
+        instructor (str, optional): Course instructor name
+    
+    Returns:
+        ObjectId: The ID of the created course
+    """
     course = {
-        "course_code": course_code,
-        "title": title,
+        "code": course_code,
+        "name": title,
         "department": department,
         "description": description,
+        "instructor": instructor,
         "date_added": datetime.datetime.utcnow(),
         "materials_count": 0
     }
@@ -120,12 +134,13 @@ def delete_course(course_id):
 def create_material(title, description, course_id, uploader_id, file_path, material_type):
     """Create a new material entry in the database."""
     material = {
+        "name": title,  # Changed to match app.py
         "title": title,
         "description": description,
         "course_id": ObjectId(course_id),
         "uploader_id": ObjectId(uploader_id),
         "file_path": file_path,
-        "material_type": material_type,  # e.g., "notes", "exam", "slides"
+        "material_type": material_type,
         "upload_date": datetime.datetime.utcnow(),
         "ratings": [],
         "avg_rating": 0,
@@ -261,3 +276,86 @@ def delete_material(material_id):
         # Delete the material
         return materials.delete_one({"_id": ObjectId(material_id)})
     return None
+
+# Discussion-related database operations
+def create_discussion(course_id, user_id, content):
+    """Create a new discussion entry in the database."""
+    user = get_user_by_id(user_id)
+    if not user:
+        return None
+        
+    discussion = {
+        "course_id": ObjectId(course_id),
+        "user_id": ObjectId(user_id),
+        "user_name": user["name"],  # Add user name for display
+        "content": content,
+        "date": datetime.datetime.utcnow(),
+        "replies": []
+    }
+    result = discussions.insert_one(discussion)
+    
+    # Add to user's discussions
+    users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$push": {"discussions": result.inserted_id}}
+    )
+    
+    return result.inserted_id
+
+def get_discussions_by_course(course_id):
+    """Retrieve all discussions for a specific course."""
+    return list(discussions.find({"course_id": ObjectId(course_id)}).sort("date", -1))
+
+def get_discussions_by_user(user_id):
+    """Retrieve all discussions by a specific user."""
+    return list(discussions.find({"user_id": ObjectId(user_id)}).sort("date", -1))
+
+def add_discussion(course_id, user_id, content):
+    """Add a new discussion (alias for create_discussion)."""
+    return create_discussion(course_id, user_id, content)
+
+def delete_discussion(discussion_id):
+    """Delete a discussion from the database."""
+    discussion = discussions.find_one({"_id": ObjectId(discussion_id)})
+    if discussion:
+        # Remove from user's discussions
+        users.update_one(
+            {"_id": discussion["user_id"]},
+            {"$pull": {"discussions": ObjectId(discussion_id)}}
+        )
+        
+        # Delete the discussion
+        return discussions.delete_one({"_id": ObjectId(discussion_id)})
+    return None
+
+def add_reply_to_discussion(discussion_id, user_id, content):
+    """Add a reply to a discussion."""
+    user = get_user_by_id(user_id)
+    if not user:
+        return None
+        
+    reply = {
+        "user_id": ObjectId(user_id),
+        "user_name": user["name"],
+        "content": content,
+        "date": datetime.datetime.utcnow()
+    }
+    
+    return discussions.update_one(
+        {"_id": ObjectId(discussion_id)},
+        {"$push": {"replies": reply}}
+    )
+
+# Helper functions for data conversion
+def convert_id_to_str(obj):
+    """Convert ObjectId to string in a dictionary."""
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if isinstance(value, ObjectId):
+                obj[key] = str(value)
+            elif isinstance(value, (list, dict)):
+                convert_id_to_str(value)
+    elif isinstance(obj, list):
+        for item in obj:
+            convert_id_to_str(item)
+    return obj

@@ -8,35 +8,54 @@
 </head>
 <body>
     <div class="container">
-        <h1>Create New Course</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Create New Course</h1>
+            <a href="{{ url_for('courses') }}" class="button">← Back to Courses</a>
+        </div>
 
-        <form action="{{ url_for('create_course') }}" method="POST">
+        {% if error %}
+        <div class="error-message show" style="margin-bottom: 20px;">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
             <div class="form-group">
                 <label for="code">Course Code:</label>
-                <input type="text" id="code" name="code" required placeholder="e.g., CS101">
+                <input type="text" id="code" name="code" required 
+                       placeholder="e.g., CS101"
+                       value="{{ form_data.code if form_data else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="name">Course Name:</label>
-                <input type="text" id="name" name="name" required placeholder="e.g., Introduction to Computer Science">
+                <input type="text" id="name" name="name" required 
+                       placeholder="e.g., Introduction to Computer Science"
+                       value="{{ form_data.name if form_data else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="instructor">Instructor:</label>
-                <input type="text" id="instructor" name="instructor" required placeholder="e.g., Dr. Smith">
+                <input type="text" id="instructor" name="instructor" 
+                       placeholder="e.g., Dr. Smith"
+                       value="{{ form_data.instructor if form_data else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="department">Department:</label>
+                <input type="text" id="department" name="department" 
+                       placeholder="e.g., Computer Science"
+                       value="{{ form_data.department if form_data else '' }}">
             </div>
 
             <div class="form-group">
                 <label for="description">Course Description:</label>
-                <textarea id="description" name="description" placeholder="Enter course description..."></textarea>
+                <textarea id="description" name="description" 
+                         placeholder="Enter course description...">{{ form_data.description if form_data else '' }}</textarea>
             </div>
 
             <button type="submit">Create Course</button>
         </form>
-
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="{{ url_for('courses_page') }}">← Back to Courses</a>
-        </p>
     </div>
 </body>
 </html> 

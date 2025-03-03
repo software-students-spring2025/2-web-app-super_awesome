@@ -36,21 +36,6 @@
             margin-bottom: 15px;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .action-buttons button {
-            flex: 1;
-            max-width: 200px;
-        }
-
-        .upload-btn {
-            background-color: var(--success-color);
-        }
-
         .back-link {
             display: inline-block;
             margin-bottom: 20px;
@@ -88,11 +73,92 @@
             width: auto;
             padding: 5px 15px;
         }
+
+        .upload-form {
+            margin-bottom: 20px;
+        }
+
+        .upload-form input[type="file"] {
+            margin-right: 10px;
+        }
+
+        .discussion-list {
+            margin-bottom: 20px;
+        }
+
+        .discussion-item {
+            background: var(--secondary-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .discussion-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .new-discussion {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .new-discussion textarea {
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .new-discussion button {
+            max-width: 200px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 5px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+            text-decoration: none;
+        }
+
+        .button-delete {
+            background-color: var(--error-color);
+        }
+
+        .material-actions form {
+            display: inline;
+            margin: 0;
+            padding: 0;
+            background: none;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{{ url_for('courses_page') }}" class="back-link">← Back to Courses</a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <a href="{{ url_for('courses') }}" class="back-link">← Back to Courses</a>
+            <div>
+                <a href="{{ url_for('profile') }}" class="button">My Profile</a>
+                <a href="{{ url_for('logout') }}" class="button" style="margin-left: 10px;">Logout</a>
+            </div>
+        </div>
 
         <div class="course-header">
             <h1>{{ course.code }} - {{ course.name }}</h1>
@@ -100,45 +166,57 @@
             {% if course.description %}
             <p><strong>Description:</strong> {{ course.description }}</p>
             {% endif %}
-            
-            <div class="action-buttons">
-                <a href="{{ url_for('upload') }}" class="upload-btn" style="text-decoration: none; text-align: center; padding: 10px;">Upload Material</a>
-                <a href="#" style="text-decoration: none; text-align: center; padding: 10px; background-color: var(--primary-color); color: white; border-radius: 4px;">Edit Course</a>
-            </div>
         </div>
 
         <div class="course-content">
             <div class="content-section">
                 <h2>Course Materials</h2>
+                <form class="upload-form" action="{{ url_for('upload_material', course_id=course._id) }}" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="material" required>
+                    <button type="submit" class="button">Upload</button>
+                </form>
                 <ul class="material-list">
-                    <!-- Example materials - replace with actual data -->
-                    <li class="material-item">
-                        <div class="material-info">
-                            <h3>Lecture 1 Slides</h3>
-                            <p>Introduction to the course</p>
-                        </div>
-                        <div class="material-actions">
-                            <button>Download</button>
-                            <button style="background-color: var(--error-color)">Delete</button>
-                        </div>
-                    </li>
-                    <li class="material-item">
-                        <div class="material-info">
-                            <h3>Assignment 1</h3>
-                            <p>First programming assignment</p>
-                        </div>
-                        <div class="material-actions">
-                            <button>Download</button>
-                            <button style="background-color: var(--error-color)">Delete</button>
-                        </div>
-                    </li>
+                    {% if materials %}
+                        {% for material in materials %}
+                        <li class="material-item">
+                            <div class="material-info">
+                                <h3>{{ material.name }}</h3>
+                                <p>{{ material.description }}</p>
+                            </div>
+                            <div class="material-actions">
+                                <a href="{{ url_for('download_material', material_id=material._id) }}" class="button">Download</a>
+                                <form action="{{ url_for('delete_material', material_id=material._id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="button button-delete" onclick="return confirm('Are you sure you want to delete this material?')">Delete</button>
+                                </form>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <p>No materials uploaded yet.</p>
+                    {% endif %}
                 </ul>
             </div>
 
             <div class="content-section">
                 <h2>Discussion</h2>
-                <p>No discussions yet.</p>
-                <button style="max-width: 200px; margin-top: 10px;">Start Discussion</button>
+                <div class="discussion-list">
+                    {% if discussions %}
+                        {% for discussion in discussions %}
+                        <div class="discussion-item">
+                            <div class="discussion-meta">
+                                Posted by {{ discussion.author }} on {{ discussion.date }}
+                            </div>
+                            <p>{{ discussion.content }}</p>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="new-discussion">
+                    <form action="{{ url_for('add_discussion_route', course_id=course._id) }}" method="POST">
+                        <textarea name="content" placeholder="Write your discussion here..." required></textarea>
+                        <button type="submit" class="button">Post Discussion</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

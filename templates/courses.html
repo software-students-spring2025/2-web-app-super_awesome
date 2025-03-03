@@ -8,7 +8,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Available Courses</h1>
+        <!-- Navigation -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Available Courses</h1>
+            <div>
+                <a href="{{ url_for('profile') }}" class="button">My Profile</a>
+                <a href="{{ url_for('logout') }}" class="button" style="margin-left: 10px;">Logout</a>
+            </div>
+        </div>
 
         <!-- Search Bar -->
         <div class="search-container">
@@ -20,16 +27,19 @@
         <!-- Course Grid -->
         <div class="course-grid">
             {% for course in courses %}
-            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="course-box">
+            <a href="{{ url_for('course_detail', course_id=course._id) }}" class="course-box">
                 <h2>{{ course.code }}</h2>
                 <p><strong>{{ course.name }}</strong></p>
-                <p>Instructor: {{ course.instructor }}</p>
+                <p>Instructor: {{ course.instructor or 'Not assigned' }}</p>
+                {% if course.department %}
+                <p>Department: {{ course.department }}</p>
+                {% endif %}
             </a>
             {% endfor %}
         </div>
 
         <!-- Create Course Button -->
-        <a href="{{ url_for('create_course') }}" class="create-button">+ Create New Course</a>
+        <a href="{{ url_for('create_course_page') }}" class="create-button">+ Create New Course</a>
     </div>
 
     <!-- Simple search functionality -->
