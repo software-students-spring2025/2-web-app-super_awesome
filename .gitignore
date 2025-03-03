@@ -191,4 +191,4 @@ instance/
 .webassets-cache
 
 # Vercel
-.vercel
+.vercel.env

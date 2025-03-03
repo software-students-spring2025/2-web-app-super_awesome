@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, session
+from flask import flash
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
 from database import (
@@ -10,7 +12,7 @@ from database import (
     create_course, get_all_courses, get_course_by_id,
     create_material, get_materials_by_course, get_materials_by_uploader,
     get_material_by_id, delete_material as delete_material_db,
-    add_discussion, get_discussions_by_course, get_discussions_by_user
+    add_discussion, get_discussions_by_course, get_discussions_by_user, update_user
 )
 
 # Load environment variables
@@ -100,20 +102,6 @@ def profile():
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
-
-# TODO-Search Page
-@app.route("/search", methods=["GET"])
-def search():
-    
-
-    return render_template("search.html")
-
-# TODO-Upload Page
-@app.route("/upload", methods=["GET", "POST"])
-def upload():
-
-    
-    return render_template("upload.html")
 
 # Courses Page
 @app.route('/courses')
@@ -288,6 +276,43 @@ def get_current_user():
     if 'user_id' in session:
         return get_user_by_id(session['user_id'])
     return None
+
+#edit profile page
+@app.route("/edit-profile", methods=["GET", "POST"])
+def edit_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    user = get_user_by_id(user_id)
+
+    if request.method == "POST":
+        new_name = request.form.get("name", "").strip()
+        new_password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+
+        update_data = {}
+
+        # Update name if provided
+        if new_name and new_name != user['name']:
+            update_data['name'] = new_name
+
+        # Update password if provided and matches confirmation
+        if new_password:
+            if new_password != confirm_password:
+                flash("Passwords do not match!", "error")
+                return render_template("edit_profile.html", user=user)
+            update_data['password'] = generate_password_hash(new_password)
+
+        # Apply updates if any fields were changed
+        if update_data:
+            update_user(user_id, update_data)
+            flash("Profile updated successfully!", "success")
+            return redirect(url_for("profile"))
+
+        flash("No changes were made.", "info")
+
+    return render_template("edit_profile.html", user=user)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
