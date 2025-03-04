@@ -7,7 +7,7 @@ from pymongo.errors import ConnectionFailure
 # Load environment variables
 load_dotenv()
 
-# Get MongoDB connection string from environment variables
+
 mongo_uri = os.getenv("MONGO_URI")
 if not mongo_uri:
     print("Error: MONGO_URI not found in environment variables")
@@ -17,14 +17,13 @@ try:
     # Create a connection to the MongoDB server
     client = MongoClient(mongo_uri)
     
-    # Verify the connection
     client.admin.command('ping')
     print("Successfully connected to MongoDB!")
     
-    # Access your database
+
     db = client.RealAwesome
     
-    # Access collections (similar to tables in SQL)
+    # Access collections
     users = db.users
     courses = db.courses
     materials = db.materials
