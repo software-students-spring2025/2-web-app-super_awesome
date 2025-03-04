@@ -234,7 +234,7 @@ def download_material(material_id):
 
 # Delete Material
 @app.route('/materials/<material_id>/delete', methods=['GET', 'POST'])
-def delete_material_route(material_id):
+def delete_material(material_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
