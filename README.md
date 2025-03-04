@@ -8,7 +8,7 @@ Site for students to share course materials and help those taking the same class
 
 ## User stories
 
-[Link to User Stories](https://github.com/software-students-spring2025/2-web-app-real_awesome/issues/1#issue-2885469877)
+[Link to User Stories](https://github.com/software-students-spring2025/2-web-app-super_awesome/issues/27)
 
 ## Steps necessary to run the software
 
