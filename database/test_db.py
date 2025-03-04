@@ -5,7 +5,6 @@ from db import users, courses, materials
 
 class TestDatabase(unittest.TestCase):
     def setUp(self):
-        # Clear test collections before each test
         users.delete_many({})
         courses.delete_many({})
         materials.delete_many({})
