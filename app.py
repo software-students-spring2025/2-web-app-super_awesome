@@ -233,8 +233,8 @@ def download_material(material_id):
                     download_name=os.path.basename(material['file_path']))
 
 # Delete Material
-@app.route('/materials/<material_id>/delete')
-def delete_material(material_id):
+@app.route('/materials/<material_id>/delete', methods=['GET', 'POST'])
+def delete_material_route(material_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
@@ -242,19 +242,20 @@ def delete_material(material_id):
     if not material:
         return 'Material not found', 404
     
-    # Check if the current user is the uploader
     if str(material['uploader_id']) != session['user_id']:
         return 'Unauthorized', 403
     
-    # Delete the file from filesystem
-    try:
-        os.remove(material['file_path'])
-    except OSError:
-        pass  # File might not exist
+    file_path = material.get('file_path')
+    storage_type = material.get('storage_type', 'local')
     
-    # Delete from database
-    delete_material_db(material_id)
+    if file_path:
+        if storage_type == 'local':
+            # Delete local file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+    delete_material(material_id)
     
+    # Redirect to course detail page
     return redirect(url_for('course_detail', course_id=str(material['course_id'])))
 
 # Add Discussion
