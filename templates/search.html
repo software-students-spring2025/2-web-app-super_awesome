@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Courses - Course Content Helper</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1>Search Courses</h1>
+      <div>
+        <a href="{{ url_for('profile') }}" class="button">My Profile</a>
+        <a href="{{ url_for('logout') }}" class="button" style="margin-left: 10px;">Logout</a>
+        <a href="{{ url_for('courses') }}" class="button" style="margin-left: 10px;">All Courses</a>
+      </div>
+    </div>
+    
+    <!-- Search Bar (client-side filtering) -->
+    <div class="search-container">
+      <div class="search-bar">
+        <input type="text" placeholder="Enter course id or course name..." id="courseSearch" onkeyup="searchCourses()">
+      </div>
+    </div>
+    
+    <!-- Course Grid -->
+    <div class="course-grid" id="coursesSection">
+      {% for course in courses %}
+      <a href="{{ url_for('course_detail', course_id=course._id if course._id is defined else course.id) }}" class="course-box">
+        <h2>{{ course.code }}</h2>
+        <p><strong>{{ course.name }}</strong></p>
+        <p>Instructor: {{ course.instructor or 'Not assigned' }}</p>
+        {% if course.department %}
+        <p>Department: {{ course.department }}</p>
+        {% endif %}
+      </a>
+      {% endfor %}
+      {% if courses|length == 0 %}
+      <p>No courses found.</p>
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- Client-side Filtering Script -->
+  <script>
+    function searchCourses() {
+      const input = document.getElementById('courseSearch');
+      const filter = input.value.toLowerCase();
+      const courseBoxes = document.getElementsByClassName('course-box');
+      
+      for (let course of courseBoxes) {
+        const text = course.textContent.toLowerCase();
+        course.style.display = text.includes(filter) ? '' : 'none';
+      }
+    }
+  </script>
+</body>
+</html>

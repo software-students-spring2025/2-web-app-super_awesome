@@ -5,7 +5,7 @@ from .models import (
     create_material, get_materials_by_course, get_materials_by_uploader,
     get_material_by_id, delete_material,
     add_discussion, get_discussions_by_course, get_discussions_by_user, update_user,
-    get_user_by_username
+    get_user_by_username, search_courses
 )
 
 __all__ = [
@@ -14,5 +14,5 @@ __all__ = [
     'create_material', 'get_materials_by_course', 'get_materials_by_uploader',
     'get_material_by_id', 'delete_material',
     'add_discussion', 'get_discussions_by_course', 'get_discussions_by_user', 'update_user',
-    'get_user_by_username'
+    'get_user_by_username', 'search_courses'
 ] 
