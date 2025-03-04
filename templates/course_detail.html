@@ -6,104 +6,77 @@
     <title>{{ course.code }} - {{ course.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
-        .course-header {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
         }
 
-        .course-header h1 {
-            margin-top: 0;
-            text-align: left;
-        }
-
-        .course-content {
+        .course-header, .course-content {
             background: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .content-section {
-            margin-bottom: 30px;
-        }
-
-        .content-section h2 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .back-link {
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .material-list {
+        .material-list, .discussion-list {
             list-style: none;
             padding: 0;
         }
 
-        .material-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #ddd;
+        .material-item, .discussion-item {
+            padding: 15px;
             border-radius: 4px;
             margin-bottom: 10px;
-            background: var(--secondary-color);
-        }
-
-        .material-item:hover {
-            background: #e8e8e8;
-        }
-
-        .material-info {
-            flex: 1;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .material-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
+            margin-top: 10px;
         }
 
-        .material-actions button {
-            width: auto;
-            padding: 5px 15px;
+        .button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--primary-color, #007bff);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            max-width: 150px;
         }
 
-        .upload-form {
-            margin-bottom: 20px;
+        .button:hover {
+            opacity: 0.9;
         }
 
         .upload-form input[type="file"] {
-            margin-right: 10px;
-        }
-
-        .discussion-list {
-            margin-bottom: 20px;
-        }
-
-        .discussion-item {
-            background: var(--secondary-color);
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        .discussion-meta {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-        }
-
-        .new-discussion {
-            background: white;
-            padding: 15px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            margin-bottom: 10px;
         }
 
         .new-discussion textarea {
@@ -115,56 +88,16 @@
             border-radius: 4px;
             resize: vertical;
         }
-
-        .new-discussion button {
-            max-width: 200px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 5px 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 4px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .button:hover {
-            opacity: 0.9;
-            text-decoration: none;
-        }
-
-        .button-delete {
-            background-color: var(--error-color);
-        }
-
-        .material-actions form {
-            display: inline;
-            margin: 0;
-            padding: 0;
-            background: none;
-            box-shadow: none;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <a href="{{ url_for('courses') }}" class="back-link">← Back to Courses</a>
-            <div>
-                <a href="{{ url_for('profile') }}" class="button">My Profile</a>
-                <a href="{{ url_for('logout') }}" class="button" style="margin-left: 10px;">Logout</a>
-            </div>
-        </div>
-
+        <a href="{{ url_for('courses') }}" class="back-link">← Back to Courses</a>
         <div class="course-header">
             <h1>{{ course.code }} - {{ course.name }}</h1>
             <p><strong>Instructor:</strong> {{ course.instructor }}</p>
             {% if course.description %}
-            <p><strong>Description:</strong> {{ course.description }}</p>
+                <p><strong>Description:</strong> {{ course.description }}</p>
             {% endif %}
         </div>
 
@@ -179,14 +112,12 @@
                     {% if materials %}
                         {% for material in materials %}
                         <li class="material-item">
-                            <div class="material-info">
-                                <h3>{{ material.name }}</h3>
-                                <p>{{ material.description }}</p>
-                            </div>
+                            <h3>{{ material.name }}</h3>
+                            <p>{{ material.description }}</p>
                             <div class="material-actions">
                                 <a href="{{ url_for('download_material', material_id=material._id) }}" class="button">Download</a>
-                                <form action="{{ url_for('delete_material', material_id=material._id) }}" method="POST" style="display: inline;">
-                                    <button type="submit" class="button button-delete" onclick="return confirm('Are you sure you want to delete this material?')">Delete</button>
+                                <form action="{{ url_for('delete_material', material_id=material._id) }}" method="POST">
+                                    <button type="submit" class="button button-delete">Delete</button>
                                 </form>
                             </div>
                         </li>
@@ -203,12 +134,12 @@
                     {% if discussions %}
                         {% for discussion in discussions %}
                         <div class="discussion-item">
-                            <div class="discussion-meta">
-                                Posted by {{ discussion.author }} on {{ discussion.date }}
-                            </div>
-                            <p>{{ discussion.content }}</p>
+                            <p><strong>{{ discussion.author }}</strong>: {{ discussion.content }}</p>
+                            <small>{{ discussion.date }}</small>
                         </div>
                         {% endfor %}
+                    {% else %}
+                        <p>No discussions yet.</p>
                     {% endif %}
                 </div>
                 <div class="new-discussion">
@@ -221,4 +152,4 @@
         </div>
     </div>
 </body>
-</html> 
+</html>
