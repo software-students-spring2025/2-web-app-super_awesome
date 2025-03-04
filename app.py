@@ -12,9 +12,9 @@ from database import (
     create_course, get_all_courses, get_course_by_id,
     create_material, get_materials_by_course, get_materials_by_uploader,
     get_material_by_id, delete_material as delete_material_db,
-    add_discussion, get_discussions_by_course, get_discussions_by_user, update_user
+    add_discussion, get_discussions_by_course, get_discussions_by_user, update_user,
+    get_user_by_username
 )
-
 # Load environment variables
 load_dotenv()
 
@@ -67,7 +67,10 @@ def register():
         password = request.form['password']
         
         # Check if user already exists
-        if get_user_by_email(email):
+        
+        if get_user_by_username(name):  # Check if username exists
+            return render_template("register.html", error="Username already taken")
+        if get_user_by_email(email):  # Check if email exists
             return render_template("register.html", error="Email already registered")
         
         # Create new user
