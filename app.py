@@ -253,7 +253,8 @@ def delete_material(material_id):
             # Delete local file
             if os.path.exists(file_path):
                 os.remove(file_path)
-    delete_material(material_id)
+    from models import delete_material as delete_material_db
+    delete_material_db(material_id)
     
     # Redirect to course detail page
     return redirect(url_for('course_detail', course_id=str(material['course_id'])))
