@@ -234,7 +234,7 @@ def download_material(material_id):
 
 # Delete Material
 @app.route('/materials/<material_id>/delete', methods=['GET', 'POST'])
-def delete_material(material_id):
+def delete_material_route(material_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
@@ -253,8 +253,7 @@ def delete_material(material_id):
             # Delete local file
             if os.path.exists(file_path):
                 os.remove(file_path)
-    from .models import delete_material as delete_material_db
-    delete_material_db(material_id)
+    delete_material(material_id)
     
     # Redirect to course detail page
     return redirect(url_for('course_detail', course_id=str(material['course_id'])))
