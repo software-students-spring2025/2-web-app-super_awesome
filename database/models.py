@@ -2,7 +2,7 @@ import os
 import datetime
 from bson.objectid import ObjectId
 from gridfs import GridFS
-from .db import users, courses, materials, discussions
+from .db import users, courses, materials, discussions, db
 from werkzeug.security import generate_password_hash
 
 from pymongo import MongoClient
