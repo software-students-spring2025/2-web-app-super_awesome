@@ -1,9 +1,36 @@
+import os
 import datetime
 from bson.objectid import ObjectId
+from gridfs import GridFS
 from .db import users, courses, materials, discussions
 from werkzeug.security import generate_password_hash
-import os
 
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+load_dotenv()
+mongo_uri = os.getenv("MONGO_URI")
+client = MongoClient(mongo_uri)
+db = client.RealAwesome 
+
+fs = GridFS(db)
+
+def delete_gridfs_file(file_id_str):
+    """Delete a file from GridFS."""
+    try:
+        if file_id_str.startswith('gridfs://'):
+            file_id_str = file_id_str.replace('gridfs://', '')
+        
+        file_id = ObjectId(file_id_str)
+
+        if fs.exists(file_id):
+            fs.delete(file_id)
+            return True
+        return False
+    except Exception as e:
+        print(f"Error deleting GridFS file: {e}")
+        return False
+    
 def create_user(username, email, password):
     """Create a new user in the database."""
     user = {
@@ -266,27 +293,29 @@ def get_storage_type(file_path):
     return "local"
 
 def delete_material(material_id):
-    """Delete a material from the database."""
+    """Delete a material from the database and associated file."""
     material = get_material_by_id(material_id)
-    if material:
-        # Decrement course materials count
-        decrement_materials_count(material["course_id"])
-        
-        # Remove from uploader's uploads
-        users.update_one(
-            {"_id": material["uploader_id"]},
-            {"$pull": {"uploads": ObjectId(material_id)}}
-        )
-        
-        # Remove from all users' bookmarks
-        users.update_many(
-            {"bookmarks": ObjectId(material_id)},
-            {"$pull": {"bookmarks": ObjectId(material_id)}}
-        )
-        
-        # Delete the material
-        return materials.delete_one({"_id": ObjectId(material_id)})
-    return None
+    if not material:
+        return None
+
+    file_path = material.get('file_path')
+    storage_type = material.get('storage_type', 'local')
+    
+    if file_path:
+        if storage_type == 'gridfs':
+            delete_gridfs_file(file_path)
+    
+    decrement_materials_count(material["course_id"])
+    users.update_one(
+        {"_id": material["uploader_id"]},
+        {"$pull": {"uploads": ObjectId(material_id)}}
+    )
+    users.update_many(
+        {"bookmarks": ObjectId(material_id)},
+        {"$pull": {"bookmarks": ObjectId(material_id)}}
+    )
+    
+    return materials.delete_one({"_id": ObjectId(material_id)})
 
 # Discussion-related database operations
 def create_discussion(course_id, user_id, content):
