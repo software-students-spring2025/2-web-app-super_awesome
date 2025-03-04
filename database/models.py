@@ -1,7 +1,9 @@
 import datetime
+import os
 from bson.objectid import ObjectId
 from .db import users, courses, materials, discussions
 from werkzeug.security import generate_password_hash
+#this is just so git detects a change
 
 # User-related database operations
 def create_user(username, email, password):
@@ -130,11 +132,11 @@ def delete_course(course_id):
     """Delete a course from the database."""
     return courses.delete_one({"_id": ObjectId(course_id)})
 
-# Material-related database operations
+
 def create_material(title, description, course_id, uploader_id, file_path, material_type):
     """Create a new material entry in the database."""
     material = {
-        "name": title,  # Changed to match app.py
+        "name": title,
         "title": title,
         "description": description,
         "course_id": ObjectId(course_id),
@@ -214,14 +216,12 @@ def add_comment(material_id, user_id, comment_text):
 
 def add_rating(material_id, user_id, rating_value):
     """Add or update a rating for a material."""
-    # First check if user already rated this material
     material = materials.find_one({
         "_id": ObjectId(material_id),
         "ratings.user_id": ObjectId(user_id)
     })
     
     if material:
-        # Update existing rating
         result = materials.update_one(
             {
                 "_id": ObjectId(material_id),
@@ -230,7 +230,6 @@ def add_rating(material_id, user_id, rating_value):
             {"$set": {"ratings.$.value": rating_value}}
         )
     else:
-        # Add new rating
         result = materials.update_one(
             {"_id": ObjectId(material_id)},
             {"$push": {"ratings": {
@@ -239,7 +238,6 @@ def add_rating(material_id, user_id, rating_value):
             }}}
         )
     
-    # Update average rating
     update_avg_rating(material_id)
     return result
 
@@ -255,25 +253,24 @@ def update_avg_rating(material_id):
     return None
 
 def delete_material(material_id):
-    """Delete a material from the database."""
+    """Delete a material from the database and remove the associated file."""
     material = get_material_by_id(material_id)
     if material:
-        # Decrement course materials count
+        file_path = material.get("file_path")
+        if file_path:
+            try:
+                # For local files
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                # For non-local files 
+                else:
+                    pass
+            except Exception as e:
+                print(f"Error deleting file {file_path}: {e}")
+
         decrement_materials_count(material["course_id"])
-        
-        # Remove from uploader's uploads
-        users.update_one(
-            {"_id": material["uploader_id"]},
-            {"$pull": {"uploads": ObjectId(material_id)}}
-        )
-        
-        # Remove from all users' bookmarks
-        users.update_many(
-            {"bookmarks": ObjectId(material_id)},
-            {"$pull": {"bookmarks": ObjectId(material_id)}}
-        )
-        
-        # Delete the material
+        users.update_one({"_id": material["uploader_id"]}, {"$pull": {"uploads": ObjectId(material_id)}})
+        users.update_many({"bookmarks": ObjectId(material_id)}, {"$pull": {"bookmarks": ObjectId(material_id)}})
         return materials.delete_one({"_id": ObjectId(material_id)})
     return None
 
@@ -287,14 +284,14 @@ def create_discussion(course_id, user_id, content):
     discussion = {
         "course_id": ObjectId(course_id),
         "user_id": ObjectId(user_id),
-        "user_name": user["name"],  # Add user name for display
+        "user_name": user["name"],
         "content": content,
         "date": datetime.datetime.utcnow(),
         "replies": []
     }
     result = discussions.insert_one(discussion)
     
-    # Add to user's discussions
+
     users.update_one(
         {"_id": ObjectId(user_id)},
         {"$push": {"discussions": result.inserted_id}}
@@ -346,7 +343,6 @@ def add_reply_to_discussion(discussion_id, user_id, content):
         {"$push": {"replies": reply}}
     )
 
-# Helper functions for data conversion
 def convert_id_to_str(obj):
     """Convert ObjectId to string in a dictionary."""
     if isinstance(obj, dict):
