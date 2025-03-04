@@ -70,8 +70,5 @@ if __name__ == "__main__":
     print("Creating database indexes...")
     create_indexes()
     
-    # Uncomment to add sample data
-    # print("Adding sample data...")
-    # add_sample_data()
     
     print("Database initialization complete!")
