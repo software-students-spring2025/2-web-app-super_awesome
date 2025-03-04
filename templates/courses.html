@@ -10,17 +10,11 @@
     <div class="container">
         <!-- Navigation -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>Available Courses</h1>
+            <h1>Most-viewed Courses</h1>
             <div>
                 <a href="{{ url_for('profile') }}" class="button">My Profile</a>
                 <a href="{{ url_for('logout') }}" class="button" style="margin-left: 10px;">Logout</a>
-            </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="search-container">
-            <div class="search-bar">
-                <input type="text" placeholder="Search courses..." id="courseSearch" onkeyup="searchCourses()">
+                <a href="{{ url_for('search_page') }}" class="button" style="margin-left: 10px;">Search Courses</a>
             </div>
         </div>
 
@@ -41,19 +35,5 @@
         <!-- Create Course Button -->
         <a href="{{ url_for('create_course_page') }}" class="create-button">+ Create New Course</a>
     </div>
-
-    <!-- Simple search functionality -->
-    <script>
-        function searchCourses() {
-            const input = document.getElementById('courseSearch');
-            const filter = input.value.toLowerCase();
-            const courses = document.getElementsByClassName('course-box');
-
-            for (let course of courses) {
-                const text = course.textContent.toLowerCase();
-                course.style.display = text.includes(filter) ? '' : 'none';
-            }
-        }
-    </script>
 </body>
-</html> 
+</html>
