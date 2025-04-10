@@ -9,7 +9,7 @@ jobs:
   log:
     runs-on: ubuntu-latest
     env:
-      COMMIT_LOG_API: ${{ secrets.COMMIT_LOG_API }}
+      COMMIT_LOG_API: ${{ secrets.COMMIT_LOG_API || 'https://default.commitlog.api/endpoint' }}
       GITHUB_LOGIN: ${{ github.actor }} # github login also available in github.triggering_actor, github.event.sender.login
       COMMITS: ${{ toJSON(github.event.commits) }}
       REPOSITORY_URL: ${{ github.repositoryUrl }}
